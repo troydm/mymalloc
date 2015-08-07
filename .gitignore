@@ -1,0 +1,6 @@
+*.o
+mymalloc
+mymemsim
+mysmemsim
+sysmemsim
+genrandms
