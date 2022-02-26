@@ -59,7 +59,7 @@ static memory_block freelist[] = { { 0, null, &(freelist[1]) },  { 0, &(freelist
 #define freelist_begin (&(freelist[0]))
 #define freelist_end (&(freelist[1]))
 
-// heap 
+// heap
 static memory_block* heap_start = null;
 static memory_block* heap_end = null;
 static uint32_t heap_size;
@@ -131,7 +131,7 @@ static inline void spinlock(){
 // print block information to stdout
 // for debug use only
 static inline void print_block(memory_block* b){
-    printf("block %p size %d prev %p next %p\n",b,b->size,b->prev,b->next);
+    printf("block %p size %ld prev %p next %p\n",b,b->size,b->prev,b->next);
 }
 
 // add block to free list
@@ -463,7 +463,7 @@ void print_freelist(){
     printf("freelist {");
     memory_block* b = freelist_start;
     while(b != freelist_end){
-        printf(" -> %p[%u|%p|%p]",b,b->size,b->prev,b->next);    
+        printf(" -> %p[%lu|%p|%p]",b,b->size,b->prev,b->next);    
         // detect infinite loop if any
         if(b == b->next){
             printf(" -> infinite loop\n");

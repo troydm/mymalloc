@@ -29,6 +29,7 @@ sysmemsim: sysmemsim.o libmemsim.o
 clean:
 	rm -f *.o
 	rm -f mymemsim
+	rm -f mysmemsim
 	rm -f sysmemsim
 	rm -f mymalloc
 	rm -f genrandms

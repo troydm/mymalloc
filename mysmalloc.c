@@ -202,7 +202,7 @@ static inline void freelist_lock_all(){
 // print block information to stdout
 // for debug use only
 static inline void print_block(memory_block* b){
-    printf("block %p size %d prev %p next %p\n",b,b->size,b->prev,b->next);
+    printf("block %p size %ld prev %p next %p\n",b,b->size,b->prev,b->next);
 }
 
 // add block to free list
@@ -549,7 +549,7 @@ void print_freelist(){
         printf("freelist %d {",i);
         memory_block* b = freelist_start(i*2);
         while(b != freelist_end(i*2)){
-            printf(" -> %p[%u|%p|%p]",b,b->size,b->prev,b->next);    
+            printf(" -> %p[%lu|%p|%p]",b,b->size,b->prev,b->next);    
             // detect infinite loop if any
             if(b == b->next){
                 printf(" -> infinite loop\n");

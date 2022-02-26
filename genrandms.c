@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    printf("generating min=%d bytes max=%d bytes %d allocations over %d pointers into %s\n",min_size,max_size,allocs,ptrs,argv[argc-1]);
+    printf("generating min=%ld bytes max=%ld bytes %d allocations over %d pointers into %s\n",min_size,max_size,allocs,ptrs,argv[argc-1]);
     if(min_size < 0 ||  max_size < 0){
         printf("min size or max size can't be negative\naborting generation\n");    
         return 1;
@@ -98,43 +98,39 @@ int main(int argc, char* argv[]){
 
     FILE* f = fopen(argv[argc-1],"w+");
 
-    void* ptr[4096];
-    memset(ptr,0,4096*sizeof(void*));
+    uint32_t* ptr = malloc(ptrs*sizeof(uint32_t));
+    memset(ptr,0,ptrs*sizeof(uint32_t));
 
     for(uint32_t i = 0; i < allocs;++i){
-        int r = (rand() % (max_size-min_size+1)) + min_size;
+        uint32_t r = (rand() % (max_size-min_size+1)) + min_size;
         int ppos = r % ptrs;
-        if(ptr[ppos] == null){
+        if(ptr[ppos] == null || r % 2 == 0){
             fprintf(f,"%d=%d",ppos,r);
-            ptr[ppos] = (void*)r;
+            ptr[ppos] = r;
         }else{
-            if(r % 2 == 0){
-                fprintf(f,"%d=%d",ppos,r);
-                ptr[ppos] = (void*)r;
-            }else{
-                fprintf(f,"%d",ppos);
-                ptr[ppos] = null;
-            }
+            fprintf(f,"%d",ppos);
+            ptr[ppos] = null;
         }
-        if(i % 8 == 0)
+        if((i+1) % 8 == 0)
             fprintf(f,"\n");
         else
             fprintf(f," ");
     }
 
-    for(int i = 0; i < 4096; ++i){
+    for(int i = 0; i < ptrs; ++i){
         if(ptr[i] != null){
             fprintf(f,"%d",i);
-            if(i % 8 == 0)
+            if((i+1) % 8 == 0)
                 fprintf(f,"\n");
             else
                 fprintf(f," ");
         }
     }
     fprintf(f,"\n");
+    free(ptr);
 
     fclose(f);
-    
+
     return 0;
 }
 
