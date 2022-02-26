@@ -50,7 +50,7 @@ description of memsim file format
 0=123 - means ptrs[0]=malloc(123) if ptrs[0] is not empty it uses realloc instead
 0 - mean free(ptrs[0]) 
 s - calls stats function
-e - stops memsim 
+e - stops memsim
 
 example of .ms file
 0=123 0 1=31 1 s
@@ -73,7 +73,7 @@ void run_memsim(char* filename, int silent, void (*stats_fun)(), int debug){
     memset(stack,0,4096*sizeof(void*));
     int mem_pos = -1;
     int mem_size = 0;
-    
+
     uint64_t t_malloc = 0;
     uint64_t t_realloc = 0;
     uint64_t t_free = 0;
@@ -177,7 +177,7 @@ void run_memsim(char* filename, int silent, void (*stats_fun)(), int debug){
         } 
 
     }
-    
+
     if(!silent){
         printf("malloc %d calls took %ums\n",c_malloc,(unsigned int)t_malloc);
         printf("realloc %d calls took %ums\n",c_realloc,(unsigned int)t_realloc);
@@ -211,7 +211,8 @@ void memsim(int repeat, int threads, char* filename, int silent,  void (*stats_f
         for(int i=0;i<repeat;++i)
             run_memsim(filename,silent,stats_fun,debug);
     }else{
-        pthread_t* thread_ids = alloca(threads*sizeof(pthread_t)); 
+        printf("starting %d threads\n", threads);
+        pthread_t* thread_ids = alloca(threads*sizeof(pthread_t));
         for(int i = 0; i < threads; ++i){
             struct memsim_args_t* args = (struct memsim_args_t*)alloca(sizeof(struct memsim_args_t));
             args->filename = filename;

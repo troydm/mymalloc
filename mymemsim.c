@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 int main(int argc, char* argv[]){
     if(argc == 1){
-        printf("./memsim [-t 1] [-s] [-d] filename.ms - malloc memory allocation simulator\n");
+        printf("./memsim [-t 1] [-r 1] [-s] [-d] filename.ms - malloc memory allocation simulator\n");
         return 1;
     }
 
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
             case 't':
                 threads = atoi(optarg);
                 if(threads == 0){
-                    fprintf(stderr, "threads can't be 0");                
+                    fprintf(stderr, "threads can't be 0");
                     exit(1);
                 }
                 break;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    memsim(repeat, threads, argv[argc-1], silent, silent ? null : &print_freelist,debug);
-    
+    memsim(repeat, threads, argv[argc-1], silent, silent ? null : &print_freelist, debug);
+
     return 0;
 }

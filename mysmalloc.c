@@ -55,7 +55,7 @@ typedef struct memory_block_t {
 
 // free memory block list
 #define FREELIST_SIZE 4 // number of freelists
-static memory_block freelists[] = { 
+static memory_block freelists[] = {
     { 0, null, &(freelists[1]) },  { 0, &(freelists[0]), null},
     { 0, null, &(freelists[3]) },  { 0, &(freelists[2]), null},
     { 0, null, &(freelists[5]) },  { 0, &(freelists[4]), null},
@@ -65,7 +65,7 @@ static memory_block freelists[] = {
 #define freelist_begin(i) (&(freelists[0+i]))
 #define freelist_end(i) (&(freelists[1+i]))
 
-// heap 
+// heap
 static memory_block* heap_start = null;
 static memory_block* heap_end = null;
 static uint32_t heap_size;
@@ -79,19 +79,19 @@ volatile bool glob_lock = false;
 volatile bool freelist_locks[] = { false, false, false, false };
 
 static inline void lock(volatile bool* lock){
-    if (!__sync_bool_compare_and_swap(lock, 0, 1)){ 
+    if (!__sync_bool_compare_and_swap(lock, 0, 1)){
         int i = 0;
-        do { 
+        do {
             if (__sync_bool_compare_and_swap(lock, 0, 1))
-                break; 
+                break;
             else{
                 if(i == 10){
                     i = 0;
-                    sched_yield(); 
+                    sched_yield();
                 }else
                     ++i;
             }
-        } while (1); 
+        } while (1);
     }
 }
 
@@ -112,14 +112,14 @@ static inline uint8_t freelist_lock(uint8_t fj){
         for(uint8_t i = 0; i < FREELIST_SIZE; ++i){
             if(fj == i*2)
                 continue;
-            if (__sync_bool_compare_and_swap(&(freelist_locks[i]), 0, 1)){ 
+            if (__sync_bool_compare_and_swap(&(freelist_locks[i]), 0, 1)){
                 return i*2;
             }
         }
         ++j;
         if(j == 10){
             j = 0;
-            sched_yield(); 
+            sched_yield();
         }
     }
 }
@@ -128,14 +128,14 @@ static inline uint8_t freelist_lock_any(){
     int j = 0;
     while(1){
         for(uint8_t i = 0; i < FREELIST_SIZE; ++i){
-            if (__sync_bool_compare_and_swap(&(freelist_locks[i]), 0, 1)){ 
+            if (__sync_bool_compare_and_swap(&(freelist_locks[i]), 0, 1)){
                 return i*2;
             }
         }
         ++j;
         if(j == 10){
             j = 0;
-            sched_yield(); 
+            sched_yield();
         }
     }
 }
@@ -151,7 +151,7 @@ static inline void freelist_lock_all(){
             ++j;
             if(j == 10){
                 j = 0;
-                sched_yield(); 
+                sched_yield();
             }
         }
     }
@@ -171,11 +171,11 @@ static inline void freelist_lock_all(){
 
 // useful macros
 #define byte_ptr(p) ((uint8_t*)p)
-#define shift_ptr(p,s) (byte_ptr(p)+s)
+#define shift_ptr(p,s) (byte_ptr(p) s)
 #define shift_block_ptr(b,s) ((memory_block*)(shift_ptr(b,s)))
-#define block_data(b) (shift_ptr(b,sizeof(size_t)))
+#define block_data(b) (shift_ptr(b,+sizeof(size_t)))
 #define data_block(p) (shift_block_ptr(p,-sizeof(size_t)))
-#define block_end(b) (shift_block_ptr(b,b->size))
+#define block_end(b) (shift_block_ptr(b,+b->size))
 
 #define block_link(lb,rb) \
     rb->prev = lb; \
@@ -215,7 +215,7 @@ static inline void add_block(uint8_t fi, memory_block* block){
             // superseding memory block will have higher memory address
             if(b > block){
                 block_link_left(block,b);
-                break;            
+                break;
             }
             // check if we hit end
             if(b->next == freelist_end(fi)){
@@ -234,7 +234,7 @@ static inline void add_block(uint8_t fi, memory_block* block){
                 block->size += block->next->size;
                 block_unlink_right(block);
                 continue;
-            }                    
+            }
             // merge left adjacent block
             if(block_end(block->prev) == block){
                 block = block->prev;
@@ -256,7 +256,7 @@ static inline void add_block(uint8_t fi, memory_block* block){
 static inline memory_block* split_memory_block(memory_block* b, size_t s){
     size_t remainder = b->size - s;
     if(remainder >= MIN_BLOCK_SIZE){
-        memory_block* nb = shift_block_ptr(b,s);
+        memory_block* nb = shift_block_ptr(b,+s);
         nb->size = remainder;
         block_replace(b,nb);
         b->size = s;
@@ -268,7 +268,7 @@ static inline memory_block* split_memory_block(memory_block* b, size_t s){
 
 static inline size_t find_optimal_memory_size(size_t s){
     size_t suitable_size = MIN_BLOCK_SIZE;
-    
+
     while(suitable_size < s)
         suitable_size = suitable_size << 1;
 
@@ -283,7 +283,7 @@ static inline memory_block* find_suitable_block(uint8_t fi, size_t ns){
         if(b->size >= ns){
             return split_memory_block(b,ns);                    
         }
-        b = b->next;    
+        b = b->next;
     }
 
     return null;
@@ -300,7 +300,7 @@ void* malloc(size_t s){
 
     // if size is greater than or equals MMAP_SIZE we are going to use mmap
     if(ns >= MMAP_SIZE){
-        void* m = mmap(NULL,s,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);    
+        void* m = mmap(NULL,s,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
         if(m == MAP_FAILED)
             return null;
         memory_block* b = (memory_block*)m;
@@ -322,7 +322,7 @@ void* malloc(size_t s){
             unlock_freelist(fi);
             // shift pointer into data block pointer
             return block_data(block);
-        }            
+        }
         unlock_freelist(fi);
         --fj;
     }
@@ -334,7 +334,7 @@ void* malloc(size_t s){
         pages_size = ALLOC_SIZE;
     // allocate memory with sbrk
     global_lock();
-    void* p = sbrk(pages_size);    
+    void* p = sbrk(pages_size);
     if(p == (void*)-1){
         global_unlock();
         return null;
@@ -343,18 +343,19 @@ void* malloc(size_t s){
     block = (memory_block*)p;
     heap_size += pages_size;
     block->size = ns;
-    heap_end = shift_block_ptr(block,pages_size);
+    heap_end = shift_block_ptr(block,+pages_size);
     heap_start = shift_block_ptr(heap_end,-heap_size);
     global_unlock();
     ns = pages_size - ns;
     if(ns >= MIN_BLOCK_SIZE){
-        memory_block* b = shift_block_ptr(block,block->size);
+        memory_block* b = shift_block_ptr(block,+block->size);
         b->size = ns;
 
         fi = freelist_lock_any();
         add_block(fi,b);
         unlock_freelist(fi);
-    }
+    }else
+        block->size = pages_size;
 
     return block_data(block);
 }
@@ -368,7 +369,6 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
     memory_block* b = freelist_start(fi);
     memory_block* be = block_end(block);
     do {
-        
         // left adjacent
         // code is slightly more complex as we need to copy data over
         if(block_end(b) == block){
@@ -380,12 +380,12 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
                 memcpy(block_data(b),block_data(block), block->size - sizeof(size_t));
                 if(remainder >= MIN_BLOCK_SIZE){
                     b->size = s;
-                    memory_block* nb = shift_block_ptr(b,s);
+                    memory_block* nb = shift_block_ptr(b,+s);
                     nb->size = remainder;
                     block_link(temp_prev,nb);
                     block_link(nb,temp_next);
                 }else{
-                    // unfortunetly here we can't use b->prev as 
+                    // unfortunetly here we can't use b->prev as
                     // it might have been overwritten by memcpy
                     // so we need to remove remaining block entirely using temporary pointers
                     block_link(temp_prev,temp_next);
@@ -399,7 +399,7 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
             if((block->size + b->size) >= s){
                 size_t remainder = (block->size + b->size) - s;
                 if(remainder >= MIN_BLOCK_SIZE){
-                    memory_block* nb = shift_block_ptr(block,s);
+                    memory_block* nb = shift_block_ptr(block,+s);
                     nb->size = remainder;
                     block_replace(b,nb);
                     block->size = s;
@@ -445,7 +445,7 @@ void* realloc(void* p, size_t s){
         return block_data(b);
     }
     global_unlock();
-    
+
     if(ns < MMAP_SIZE){
         // check if size is already sufficient
         if(b->size >= ns){

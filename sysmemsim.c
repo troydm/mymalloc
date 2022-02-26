@@ -37,7 +37,7 @@ void print_tild(){
 
 int main(int argc, char* argv[]){
     if(argc == 1){
-        printf("./sysmemsim [-t 1] [-s] [-d] filename.ms - malloc memory allocation simulator that uses system malloc\n");
+        printf("./sysmemsim [-t 1] [-r 1] [-s] [-d] filename.ms - malloc memory allocation simulator that uses system malloc\n");
         return 1;
     }
 
