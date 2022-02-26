@@ -32,4 +32,4 @@ clean:
 	rm -f sysmemsim
 	rm -f mymalloc
 	rm -f genrandms
-
+	rm -f mysmemsim

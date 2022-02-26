@@ -100,7 +100,7 @@ static inline void spinlock(){
 
 // useful macros
 #define byte_ptr(p) ((uint8_t*)p)
-#define shift_ptr(p,s) (byte_ptr(p)+s)
+#define shift_ptr(p,s) (byte_ptr(p)+(int)s)
 #define shift_block_ptr(b,s) ((memory_block*)(shift_ptr(b,s)))
 #define block_data(b) (shift_ptr(b,sizeof(size_t)))
 #define data_block(p) (shift_block_ptr(p,-sizeof(size_t)))
@@ -264,11 +264,13 @@ void* malloc(size_t s){
 
     block = (memory_block*)p;
     heap_size += pages_size;
-    block->size = ns;
+    block->size = pages_size;
     heap_end = shift_block_ptr(block,pages_size);
     heap_start = shift_block_ptr(heap_end,-heap_size);
-    ns = pages_size - ns;
-    if(ns >= MIN_BLOCK_SIZE){
+
+    size_t remainder = pages_size - ns;
+    if(remainder >= MIN_BLOCK_SIZE){
+    	block->size = ns;
         memory_block* b = shift_block_ptr(block,block->size);
         b->size = ns;
         add_block(b);
@@ -285,8 +287,9 @@ static inline memory_block* merge_with_adjacent_block(memory_block* block, size_
         return null;
 
     memory_block* b = freelist_start;
-    memory_block* be = block_end(block);
+    memory_block* be = null;
     do {
+    	be = block_end(block);
         
         // left adjacent
         // code is slightly more complex as we need to copy data over
@@ -296,6 +299,7 @@ static inline memory_block* merge_with_adjacent_block(memory_block* block, size_
                 // we need to backup block pointers as they might be overwritten by memcpy
                 memory_block* temp_prev = b->prev;
                 memory_block* temp_next = b->next;
+		b->size += block->size;
                 memcpy(block_data(b),block_data(block), block->size - sizeof(size_t));
                 if(remainder >= MIN_BLOCK_SIZE){
                     b->size = s;
@@ -317,7 +321,9 @@ static inline memory_block* merge_with_adjacent_block(memory_block* block, size_
         if(be == b){
             if((block->size + b->size) >= s){
                 size_t remainder = (block->size + b->size) - s;
+		b->size += block->size;
                 if(remainder >= MIN_BLOCK_SIZE){
+		    b->size = s;
                     memory_block* nb = shift_block_ptr(block,s);
                     nb->size = remainder;
                     block_replace(b,nb);
