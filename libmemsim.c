@@ -230,7 +230,6 @@ void memsim(int repeat, int threads, char* filename, int silent,  void (*stats_f
         }
     }
 
-    if(!silent)
-        printf("memory simulation took %ums\n",(unsigned int)(get_time()-st));
+    printf("memory simulation took %ums\n",(unsigned int)(get_time()-st));
 }
 
