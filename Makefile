@@ -3,7 +3,7 @@ all: mymalloc mymemsim mysmemsim sysmemsim genrandms
 CC=cc
 LD=ld
 LD_FLAGS=-lpthread
-CC_FLAGS=-std=gnu99 -Wall -I. -g
+CC_FLAGS=-std=gnu99 -O1 -Wall -I. -g
 
 %.o: %.c
 	$(CC) -c $< $(CC_FLAGS)
