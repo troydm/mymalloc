@@ -372,8 +372,9 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
         // left adjacent
         // code is slightly more complex as we need to copy data over
         if(block_end(b) == block){
-            if((b->size + block->size) >= s){
-                size_t remainder = (b->size + block->size) - s;
+            size_t bs =  b->size + block->size;
+            if(bs >= s){
+                size_t remainder = bs - s;
                 // we need to backup block pointers as they might be overwritten by memcpy
                 memory_block* temp_prev = b->prev;
                 memory_block* temp_next = b->next;
@@ -385,6 +386,7 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
                     block_link(temp_prev,nb);
                     block_link(nb,temp_next);
                 }else{
+                    b->size = bs;
                     // unfortunetly here we can't use b->prev as
                     // it might have been overwritten by memcpy
                     // so we need to remove remaining block entirely using temporary pointers
@@ -396,8 +398,9 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
 
         // right adjacent
         if(be == b){
-            if((block->size + b->size) >= s){
-                size_t remainder = (block->size + b->size) - s;
+            size_t bs = block->size + b->size;
+            if(bs >= s){
+                size_t remainder = bs - s;
                 if(remainder >= MIN_BLOCK_SIZE){
                     memory_block* nb = shift_block_ptr(block,+s);
                     nb->size = remainder;
@@ -405,6 +408,7 @@ static inline memory_block* merge_with_adjacent_block(uint8_t fi, memory_block* 
                     block->size = s;
                 }else{
                     block_unlink(b);
+                    block->size = bs;
                 }
                 return block;
             }
