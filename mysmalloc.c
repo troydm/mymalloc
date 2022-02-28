@@ -54,12 +54,16 @@ typedef struct memory_block_t {
 } memory_block;
 
 // free memory block list
-#define FREELIST_SIZE 4 // number of freelists
+#define FREELIST_SIZE 8 // number of freelists
 static memory_block freelists[] = {
     { 0, null, &(freelists[1]) },  { 0, &(freelists[0]), null},
     { 0, null, &(freelists[3]) },  { 0, &(freelists[2]), null},
     { 0, null, &(freelists[5]) },  { 0, &(freelists[4]), null},
     { 0, null, &(freelists[7]) },  { 0, &(freelists[6]), null},
+    { 0, null, &(freelists[9]) },  { 0, &(freelists[8]), null},
+    { 0, null, &(freelists[11]) }, { 0, &(freelists[10]), null},
+    { 0, null, &(freelists[13]) }, { 0, &(freelists[12]), null},
+    { 0, null, &(freelists[15]) }, { 0, &(freelists[14]), null},
 };
 #define freelist_start(i) (freelists[0+i].next)
 #define freelist_begin(i) (&(freelists[0+i]))
@@ -76,7 +80,7 @@ static uint32_t mmap_size;
 
 // locking
 volatile bool glob_lock = false;
-volatile bool freelist_locks[] = { false, false, false, false };
+volatile bool freelist_locks[] = { false, false, false, false, false, false, false, false };
 
 static inline void lock(volatile bool* lock){
     if (!__sync_bool_compare_and_swap(lock, 0, 1)){
